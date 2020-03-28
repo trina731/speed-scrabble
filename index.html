@@ -6,16 +6,23 @@
     <script>
         
         //Array mapping each letter to the number of tiles for that letter
-        var numLetters = [];
+        var unflipped = [];
+        var allUnflippedTiles = "";
 
         //Number of tiles in bag
-        var numTiles = 0;
+        var numBag = 0;
 
         //String with the given alphabet
         var alph = "";
+
+        //Array of all tiles in the middle (flipped/unflipped/taken)
+        var allTiles = [];
+
+        //Number of available tiles for each letter 
+        var flipped = [];
     </script> 
     <script src="./tiles.js"></script>
- 
+    
 </head>
 <body>
     
@@ -26,13 +33,6 @@
     </p>
 
     <script>
-        let emptyTiles = "";
-        for(i = 0; i < numTiles; i++){
-            emptyTiles += "_ ";
-        }
-        alert("empty Tiles: " + emptyTiles);
-        $( "p" ).replaceWith( "<p>" + emptyTiles + "<p>" );
-        alert("numTiles: " + numTiles);
-   
+        
     </script>   
 </body>
