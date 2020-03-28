@@ -1,7 +1,38 @@
 <!DOCTYPE html>
 <head>
     <title>JavaScript Modules</title>
+    <script src="http://code.jquery.com/jquery-1.11.3.min.js"></script>
+    <script src="http://code.jquery.com/ui/1.11.4/jquery-ui.min.js"></script>
+    <script>
+        
+        //Array mapping each letter to the number of tiles for that letter
+        var numLetters = [];
+
+        //Number of tiles in bag
+        var numTiles = 0;
+
+        //String with the given alphabet
+        var alph = "";
+    </script> 
+    <script src="./tiles.js"></script>
+ 
 </head>
 <body>
-    <script type="module" src="./dictionary.js"></script>
+    
+
+
+    <p id="myelement1">
+        Hello world.
+    </p>
+
+    <script>
+        let emptyTiles = "";
+        for(i = 0; i < numTiles; i++){
+            emptyTiles += "_ ";
+        }
+        alert("empty Tiles: " + emptyTiles);
+        $( "p" ).replaceWith( "<p>" + emptyTiles + "<p>" );
+        alert("numTiles: " + numTiles);
+   
+    </script>   
 </body>

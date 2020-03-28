@@ -1,4 +1,4 @@
-const newTrie = require("./dict");
+const newTrie = require("./trie");
 var dict = newTrie();
 // insert few values
 dict.insert("hello");
