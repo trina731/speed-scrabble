@@ -21,18 +21,25 @@
         //Number of available tiles for each letter 
         var flipped = [];
     </script> 
-    <script src="./tiles.js"></script>
+    <script src="loadTiles.js"></script>
+    <script src="flip.js" defer></script>
     
 </head>
 <body>
     
 
 
-    <p id="myelement1">
-        Hello world.
+    <p id="array">
     </p>
 
     <script>
-        
+        alert("alph:" + alph);
+        document.getElementById("array").innerHTML = alph;
+    </script>   
+
+    <button type="button" id="flipBtn">Flip a tile!</button>
+
+    <script>
+        document.getElementById("array").innerHTML = allTiles;
     </script>   
 </body>

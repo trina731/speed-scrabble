@@ -1,4 +1,4 @@
-//Read from file which 
+//Read from file which has number of each letter
 $.get( "letters.txt", function( data ) {
     let txt = data.toString().split("\n");
 
@@ -14,7 +14,6 @@ $.get( "letters.txt", function( data ) {
             allUnflippedTiles += alph.substring(i);
         }
     }   
-    
-    flipped = Array(numBag).fill(0);
+    flipped = Array(alphSize).fill(0);
     allTiles = Array(numBag).fill("_"); 
 });
