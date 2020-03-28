@@ -22,10 +22,17 @@ btn.onclick = function(){
         flipped[alph.indexOf(newLetter)] = flipped[alph.indexOf(newLetter)] + 1;
         unflipped[alph.indexOf(newLetter)] = unflipped[alph.indexOf(newLetter)] - 1;
 
-        //Render changes
-        document.getElementById("array").innerHTML = allTiles;
-    }
 
+
+        //Render changes
+        let yVal = Math.floor(toFlip / xSize);
+        let xVal = toFlip % xSize; 
+        let table = document.getElementById('pool');
+
+        //Select cell and change source image to new letter
+        let toEdit = table.rows[yVal].cells[xVal].childNodes[0];
+        toEdit.src = "./img/" + newLetter + ".jpg";
+    }
 }
 
 

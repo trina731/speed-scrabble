@@ -17,3 +17,4 @@ $.get( "letters.txt", function( data ) {
     flipped = Array(alphSize).fill(0);
     allTiles = Array(numBag).fill("_"); 
 });
+

@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <head>
     <title>JavaScript Modules</title>
+    
     <script src="http://code.jquery.com/jquery-1.11.3.min.js"></script>
     <script src="http://code.jquery.com/ui/1.11.4/jquery-ui.min.js"></script>
     <script>
@@ -20,10 +21,19 @@
 
         //Number of available tiles for each letter 
         var flipped = [];
+
+        //For tiles on table
+        var xSize = 12;
+        var ySize = 0;
     </script> 
     <script src="loadTiles.js"></script>
     <script src="flip.js" defer></script>
     
+    <style>
+        img {
+            width: 20px;
+        }
+    </style>
 </head>
 <body>
     
@@ -31,6 +41,10 @@
 
     <p id="array">
     </p>
+
+    <table id="pool">
+
+    </table>
 
     <script>
         alert("alph:" + alph);
@@ -40,6 +54,29 @@
     <button type="button" id="flipBtn">Flip a tile!</button>
 
     <script>
-        document.getElementById("array").innerHTML = allTiles;
+        //Generate table of tiles
+        let table = document.getElementById("pool");
+
+        ySize = Math.ceil(numBag / xSize);
+
+        let count = 0;
+        for(i = 0; i < ySize; i++){
+            let row = table.insertRow();
+            for(j = 0; j < xSize; j++){
+                //Check if there are already enough tiles
+                if(count < numBag){
+                    let cell = row.insertCell();
+                    let elem = document.createElement("img");
+                    elem.src = "./img/_.jpg";
+                    cell.appendChild(elem);
+                    count++;
+                }
+                else
+                    break;
+            }
+        }
+        
+        
+        
     </script>   
 </body>
