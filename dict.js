@@ -1,15 +1,19 @@
+const fs = require('fs') 
 const newTrie = require("./trie");
-var dict = newTrie();
-// insert few values
-dict.insert("hello");
-dict.insert("helium");
 
-// check contains method
-console.log(dict.contains("helium"));  // true
-console.log(dict.contains("kickass")); // false
+//read from valid words file
+function loadDict(dict){
+    validWords = fs.readFileSync("valid_words.txt").toString().split("\r"); 
+    for(i = 0; i < validWords.length; i++){
+        dict.insert(validWords[i].substring(1));
+    }
+}
 
-// check find method
-console.log(dict.find("hel"));  // [ 'helium', 'hello' ]
-console.log(dict.find("hell")); // [ 'hello' ]
-console.log(dict.contains("hello"));
-console.log("Hello Word");
+function isValidWord(dict, word){
+    if(dict.contains(word)){
+        return true;
+    }
+    else{
+        return false;
+    }
+}
