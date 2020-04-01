@@ -18,5 +18,9 @@
   "bugs": {
     "url": "https://github.com/trina731/speed-scrabble/issues"
   },
-  "homepage": "https://github.com/trina731/speed-scrabble#readme"
+  "homepage": "https://github.com/trina731/speed-scrabble#readme",
+  "dependencies": {
+    "express": "^4.17.1",
+    "socket.io": "^2.3.0"
+  }
 }

@@ -17,3 +17,6 @@ function isValidWord(dict, word){
         return false;
     }
 }
+
+module.exports = loadDict;
+module.exports = isValidWord;
