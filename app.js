@@ -57,11 +57,20 @@ io.sockets.on('connection', function(socket){
     console.log("socket connection");
 
     socket.on('submitWord', function(data){
-        //Just testing out the next couple lines
+        //These two lines will have to be changed
         PLAYER_LIST[socket.id].words.push(data);
         PLAYER_LIST[socket.id].score += data.length;
+        var pack = [];
+        for(var  i in PLAYER_LIST){
+            var player = PLAYER_LIST[i];
+            pack.push({
+                number:player.number,
+                score:player.score,
+                words:player.words
+            });
+        }
         for(s in SOCKET_LIST){
-            SOCKET_LIST[s].emit("updateWordDisplay", JSON.stringify(PLAYER_LIST));
+            SOCKET_LIST[s].emit("updateWordDisplay", pack);
         }
         //TODO:
         //Check if in dictionary
@@ -78,6 +87,7 @@ io.sockets.on('connection', function(socket){
     })
 });
 
+//We can repurpose this to handle tile-flipping
 setInterval(function(){
     var pack = [];
     for(var  i in SOCKET_LIST){

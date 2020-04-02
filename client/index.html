@@ -17,6 +17,17 @@
         var wordInput = document.getElementById('word-input');
         var playerInfo = document.getElementById('playerInfo');
 
+
+        var Player = function(id){
+            var self = {
+                words:[],
+                score:0,
+                id:id,
+                number:"" + Math.floor(100 * Math.random()),
+            }
+            return self;
+        }
+
         //Hm... I'm not a fan of hardcoding 2000. What if that port is busy for some reason?
         //I guess for now it's ok because it makes it easy to use in the browser, but I think
         //We should look into alternatives
@@ -30,10 +41,10 @@
         });
 
         socket.on('updateWordDisplay', function(data){
-            //TODO:
-            //Turn this ugly JSON thing into something more readable
-            console.log("update display: " + data.player);
-            playerInfo.innerHTML = data;
+            playerInfo.innerHTML = '';
+            for(i in data)
+                playerInfo.innerHTML += "<p>" + data[i].number + "'s score: " +
+                data[i].score + " Words: " + data[i].words + "</p>";
         })
 
         socket.on('evalAnswer', function(data){
