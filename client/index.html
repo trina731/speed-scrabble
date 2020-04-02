@@ -1,11 +1,25 @@
 <!DOCTYPE html>
-<canvas id="ctx" width="500" height="500" style="border:1px solid #000000;"></canvas>"
+
+<!-- I tried moving these things into the body and it didn't work... Not sure why -->
+<canvas id="ctx" width="500" height="500" style="border:1px solid #000000;"></canvas>
+<form id="word-form">
+    <input id="word-input" type='text' style='width:500px'></input>
+</form>
+<div id="playerInfo"></div>
 <head>
     <script src="http://localhost:2000/socket.io/socket.io.js"></script>
     <script>
         var c = document.getElementById("ctx");
         ctx = c.getContext("2d");
         ctx.font = '30px Arial';
+
+        var wordForm = document.getElementById('word-form');
+        var wordInput = document.getElementById('word-input');
+        var playerInfo = document.getElementById('playerInfo');
+
+        //Hm... I'm not a fan of hardcoding 2000. What if that port is busy for some reason?
+        //I guess for now it's ok because it makes it easy to use in the browser, but I think
+        //We should look into alternatives
         var socket = io.connect('http://localhost:2000');
 
         socket.on('newPositions', function(data){
@@ -14,83 +28,35 @@
                 ctx.fillText(data[i].number, data[i].x,data[i].y);
             }
         });
-    </script>
 
+        socket.on('updateWordDisplay', function(data){
+            //TODO:
+            //Turn this ugly JSON thing into something more readable
+            console.log("update display: " + data.player);
+            playerInfo.innerHTML = data;
+        })
 
-    <!-- <script src="http://code.jquery.com/jquery-1.11.3.min.js"></script>
-    <script src="http://code.jquery.com/ui/1.11.4/jquery-ui.min.js"></script>
-    <script>
-        //Array mapping each letter to the number of tiles for that letter
-        var unflipped = [];
-        var allUnflippedTiles = "";
+        socket.on('evalAnswer', function(data){
+            console.log(data);
+        })
 
-        //Number of tiles in bag
-        var numBag = 0;
+        wordForm.onsubmit = function(e){
+            //Prevent automatic page refresh
+            e.preventDefault();
 
-        //String with the given alphabet
-        var alph = "";
-
-        //Array of all tiles in the middle (flipped/unflipped/taken)
-        var allTiles = [];
-
-        //Number of available tiles for each letter 
-        var flipped = [];
-
-        //For tiles on table
-        var xSize = 12;
-        var ySize = 0;
-    </script> 
-    <script src="loadTiles.js"></script>
-    <script src="flip.js" defer></script>
-    
-    <style>
-        img {
-            width: 20px;
+            //For debugging purposes: 
+            //If you want to see the value of a variable, type in textbox
+            //starting with a slash
+            //You can also type functions
+            if(wordInput.value[0] === '/'){
+                socket.emit('evalServer', wordInput.value.slice(1));
+            }
+            else{
+                socket.emit('submitWord', wordInput.value);
+            }
+            wordInput.value = '';
         }
-    </style> -->
+    </script>
 </head>
 <body>
-    hello world
-
-
-    <!-- <p id="array">
-    </p>
-
-    <table id="pool">
-
-    </table>
-
-    <script>
-        alert("alph:" + alph);
-        document.getElementById("array").innerHTML = alph;
-    </script>   
-
-    <button type="button" id="flipBtn">Flip a tile!</button>
-
-    <script>
-        //Generate table of tiles
-        let table = document.getElementById("pool");
-
-        ySize = Math.ceil(numBag / xSize);
-
-        let count = 0;
-        for(i = 0; i < ySize; i++){
-            let row = table.insertRow();
-            for(j = 0; j < xSize; j++){
-                //Check if there are already enough tiles
-                if(count < numBag){
-                    let cell = row.insertCell();
-                    let elem = document.createElement("img");
-                    elem.src = "./img/_.jpg";
-                    cell.appendChild(elem);
-                    count++;
-                }
-                else
-                    break;
-            }
-        }
-        
-        
-        
-    </script>    -->
 </body>
