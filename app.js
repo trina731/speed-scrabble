@@ -3,6 +3,8 @@ var DEBUG = 1;
 var express = require('express');
 var app = express();
 var serv = require('http').Server(app);
+var newTrie = require("./trie");
+//const dictMethods = require("./dict");
 
 app.get('/', function(req, res) {
     res.sendFile(__dirname + '/client/index.html');
@@ -38,6 +40,19 @@ var Player = function(id){
     return self;
 }
 
+//load dictionary
+const fs = require('fs') 
+var dict = newTrie.trie;
+validWords = fs.readFileSync("valid_words.txt").toString().split("\r"); 
+for(i = 0; i < validWords.length; i++){
+    dict.insert(validWords[i].substring(1));
+}
+//console.log(dict);
+var methods = require('./dict')(dict);
+
+//leaving this in - example of checking valid word
+/*console.log(methods.isValidWord("cat"));*/
+
 var io = require("socket.io")(serv,{});
 io.sockets.on('connection', function(socket){
     socket.id = Math.random();
@@ -58,22 +73,26 @@ io.sockets.on('connection', function(socket){
 
     socket.on('submitWord', function(data){
         //These two lines will have to be changed
-        PLAYER_LIST[socket.id].words.push(data);
-        PLAYER_LIST[socket.id].score += data.length;
-        var pack = [];
-        for(var  i in PLAYER_LIST){
-            var player = PLAYER_LIST[i];
-            pack.push({
-                number:player.number,
-                score:player.score,
-                words:player.words
-            });
+        if(methods.isValidWord(data)){
+            PLAYER_LIST[socket.id].words.push(data);
+            PLAYER_LIST[socket.id].score += data.length;
+            var pack = [];
+            for(var  i in PLAYER_LIST){
+                var player = PLAYER_LIST[i];
+                pack.push({
+                    number:player.number,
+                    score:player.score,
+                    words:player.words
+                });
+            }
+            for(s in SOCKET_LIST){
+                SOCKET_LIST[s].emit("updateWordDisplay", pack);
+            }
         }
-        for(s in SOCKET_LIST){
-            SOCKET_LIST[s].emit("updateWordDisplay", pack);
+        else{
+            //TODO (What to do if not a word)
         }
         //TODO:
-        //Check if in dictionary
         //Check if playable
         //Update display and pts if necessary
     });

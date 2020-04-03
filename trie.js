@@ -40,9 +40,8 @@ function TrieNode(key) {
   }
 
   function createNewTrie(){
-    var trie = new Trie();
-    return trie;
-} 
+    return new Trie;
+  } 
   
   // inserts a word into the trie.
   // time complexity: O(k), k = word length
@@ -130,8 +129,7 @@ function TrieNode(key) {
     
   }
 
-  module.exports = createNewTrie;
-  
+  module.exports = {trie : new Trie};
   // -----------------------------------------
 
   
