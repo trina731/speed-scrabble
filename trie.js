@@ -38,10 +38,6 @@ function TrieNode(key) {
   function Trie() {
     this.root = new TrieNode(null);
   }
-
-  function createNewTrie(){
-    return new Trie;
-  } 
   
   // inserts a word into the trie.
   // time complexity: O(k), k = word length
