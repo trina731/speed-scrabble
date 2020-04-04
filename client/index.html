@@ -1,7 +1,11 @@
 <!DOCTYPE html>
 
 <!-- I tried moving these things into the body and it didn't work... Not sure why -->
-<canvas id="ctx" width="500" height="500" style="border:1px solid #000000;"></canvas>
+<canvas id="ctx" width="500" height="500" style="border:1px solid #000000;">
+    <div id="array"></div>
+</canvas>
+<button type="button" id="flipBtn">Flip a tile!</button>
+
 <form id="word-form">
     <input id="word-input" type='text' style='width:500px'></input>
 </form>
@@ -16,6 +20,7 @@
         var wordForm = document.getElementById('word-form');
         var wordInput = document.getElementById('word-input');
         var playerInfo = document.getElementById('playerInfo');
+        let btn = document.getElementById('flipBtn');
 
         var Player = function(id){
             var self = {
@@ -27,25 +32,40 @@
             return self;
         }
 
-
         //Hm... I'm not a fan of hardcoding 2000. What if that port is busy for some reason?
         //I guess for now it's ok because it makes it easy to use in the browser, but I think
         //We should look into alternatives
         var socket = io.connect('http://localhost:2000');
 
-        socket.on('newPositions', function(data){
-            ctx.clearRect(0,0,500,500);
-            for(var i = 0; i < data.length; i++){
-                ctx.fillText(data[i].number, data[i].x,data[i].y);
-            }
+        btn.onclick = function(){
+            console.log("Requested flip inside index.html");
+            socket.emit("requestFlip");
+        }
+
+        socket.on("updateFlip", function(data){
+                //Render changes
+                console.log("data" + data);
+                ctx.clearRect(0,0,500,500);
+                ctx.fillText(data.toString(), 20, 20);
+                // for(var i = 0; i < data.length; i++){
+                //     ctx.fillText(data[i].toString());
+                // } 
         });
+
+        // socket.on('newPositions', function(data){
+        //     ctx.clearRect(0,0,500,500);
+        //     for(var i = 0; i < data.length; i++){
+        //         ctx.fillText(data[i].number, data[i].x,data[i].y);
+        //     }
+        // });
 
         socket.on('updateWordDisplay', function(data){
             playerInfo.innerHTML = '';
-            for(i in data)
+            for(i in data){
                 playerInfo.innerHTML += "<p>" + data[i].number + "'s score: " +
                 data[i].score + "<br/>" + " Words: " + data[i].words.join(', ') + "</p>";
-        })
+            }
+        });
 
         socket.on('evalAnswer', function(data){
             console.log(data);

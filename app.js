@@ -54,6 +54,35 @@ var methods = require('./dict')(dict);
 /*console.log(methods.isValidWord("cat"));*/
 
 var io = require("socket.io")(serv,{});
+
+
+//TILES
+var alph = "";
+var allUnflippedTiles = "";
+var numBag = 0;
+
+var unflipped = [];
+var flipped = [];
+var allTiles = [];
+
+let txt = fs.readFileSync('letters.txt').toString().split("\n");;
+
+//First line has the number of letters in the alphabet
+let alphSize = Number(txt[0]);
+
+//Initialize from file
+for(i = 0; i < alphSize; i++){
+    alph += txt[i+1].substring(0,1);
+    unflipped[i] = Number(txt[i+1].substring(1));
+    numBag += unflipped[i];
+    for(j = 0; j < unflipped[i]; j++){
+        allUnflippedTiles += alph.substring(i);
+    }
+}   
+flipped = Array(alphSize).fill(0);
+allTiles = Array(numBag).fill("_"); 
+
+
 io.sockets.on('connection', function(socket){
     socket.id = Math.random();
     SOCKET_LIST[socket.id] = socket;
@@ -104,6 +133,34 @@ io.sockets.on('connection', function(socket){
         var res = eval(data);
         socket.emit('evalAnswer', res);
     })
+
+
+    socket.on('requestFlip', function(){
+        console.log('flip requested in app js');
+        if(allUnflippedTiles !== ""){
+            //Find unflipped tile
+            let toFlip = 0;
+            while(allTiles[toFlip] !== '_'){
+                toFlip++;
+            }
+    
+            //Choose random letter from bag
+            let randIndex = Math.random() * allUnflippedTiles.length;
+            let newLetter = allUnflippedTiles.substring(randIndex, randIndex + 1);
+    
+            //Remove letter from bag
+            allUnflippedTiles = allUnflippedTiles.substring(0,randIndex) + allUnflippedTiles.substring(randIndex);
+    
+            //Flip tile and update counts
+            allTiles[toFlip] = newLetter;
+            flipped[alph.indexOf(newLetter)] = flipped[alph.indexOf(newLetter)] + 1;
+            unflipped[alph.indexOf(newLetter)] = unflipped[alph.indexOf(newLetter)] - 1;
+    
+            console.log("All tiles: " + allTiles);
+            //Render changes
+            socket.emit('updateFlip', allTiles);
+        }
+    });
 });
 
 //We can repurpose this to handle tile-flipping
