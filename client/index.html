@@ -45,24 +45,28 @@
             socket.emit("requestFlip");
         }
 
-        socket.on("updateFlip", function(data){
-                //Render changes
-                let table = document.getElementById("pool");
-                table.innerHTML = "";
+        //FOr setting up the table when client connects
+        socket.on("tileInfo", function(data){
+            let table = document.getElementById("pool");
+            table.innerHTML = "";
 
-                let numBag = data.length;
-                let xSize = 12;
-                let ySize = Math.ceil(numBag / xSize);
+            let numBag = data.length;
+            let xSize = 12;
+            let ySize = Math.ceil(numBag / xSize);
 
-                let count = 0;
-                for(i = 0; i < ySize; i++){
+            let count = 0;
+            for(i = 0; i < ySize; i++){
                     let row = table.insertRow();
                     for(j = 0; j < xSize; j++){
                         //Check if there are already enough tiles
                         if(count < numBag){
                             let cell = row.insertCell();
                             let elem = document.createElement("img");
-                            let l = data[xSize*i + j];
+                            
+                            //Set id of tile to the index of that
+                            //tile in the pool array
+                            elem.setAttribute("id", "tile_" + count);
+                            let l = data[count];
                             elem.src = "/img/" + l + ".jpg";
                             cell.appendChild(elem);
                             count++;
@@ -71,13 +75,22 @@
                             break;
                     }
                 }
+        });
+        
+        //Updates tiles when any player flip a tile
+        socket.on("updateFlip", function(data){
+                //Render changes
+                let table = document.getElementById("pool");
+                let numBag = data.length;
 
-
+                for(i = 0; i < numBag; i++){
+                    let t = document.getElementById("tile_" + i);
+                    t.src = '/img/' + data[i] + '.jpg';
+                }
                 console.log("data" + data);
-                // ctx.clearRect(0,0,500,500);
-                // ctx.fillText(data.toString(), 20, 20);
         });
 
+        
         socket.on('updateWordDisplay', function(data){
             playerInfo.innerHTML = '';
             for(i in data){

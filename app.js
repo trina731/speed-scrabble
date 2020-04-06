@@ -90,6 +90,8 @@ io.sockets.on('connection', function(socket){
  
     var player = Player(socket.id);
     PLAYER_LIST[socket.id] = player;
+
+    socket.emit('tileInfo', allTiles);
    
     socket.on('disconnect',function(){
         delete SOCKET_LIST[socket.id];
