@@ -9,7 +9,8 @@ var newTrie = require("./trie");
 app.get('/', function(req, res) {
     res.sendFile(__dirname + '/client/index.html');
 });
-app.use('/client', express.static(__dirname + 'client'));
+app.use(express.static(__dirname + '/client'));
+// app.use('/client', express.static(__dirname + 'client'));
 
 //port is 2000
 //default domain is localhost
@@ -125,7 +126,8 @@ io.sockets.on('connection', function(socket){
         //Check if playable
         //Update display and pts if necessary
     });
-
+    
+    //For debugging app.js from browser
     socket.on('evalServer', function(data){
         //Running eval(data) is dangerous, so don't let real users do it
         if(!DEBUG)
@@ -134,7 +136,8 @@ io.sockets.on('connection', function(socket){
         socket.emit('evalAnswer', res);
     })
 
-
+    //Called when client clicks flip
+    //Emits array of tiles in pool
     socket.on('requestFlip', function(){
         console.log('flip requested in app js');
         if(allUnflippedTiles !== ""){
@@ -158,7 +161,8 @@ io.sockets.on('connection', function(socket){
     
             console.log("All tiles: " + allTiles);
             //Render changes
-            socket.emit('updateFlip', allTiles);
+            for(s in SOCKET_LIST)
+                SOCKET_LIST[s].emit('updateFlip', allTiles);
         }
     });
 });

@@ -1,9 +1,12 @@
 <!DOCTYPE html>
 
 <!-- I tried moving these things into the body and it didn't work... Not sure why -->
-<canvas id="ctx" width="500" height="500" style="border:1px solid #000000;">
+<canvas id="ctx" width="0" height="0" style="border:1px solid #000000;">
     <div id="array"></div>
 </canvas>
+
+<table id="pool"></table>
+
 <button type="button" id="flipBtn">Flip a tile!</button>
 
 <form id="word-form">
@@ -44,20 +47,36 @@
 
         socket.on("updateFlip", function(data){
                 //Render changes
-                console.log("data" + data);
-                ctx.clearRect(0,0,500,500);
-                ctx.fillText(data.toString(), 20, 20);
-                // for(var i = 0; i < data.length; i++){
-                //     ctx.fillText(data[i].toString());
-                // } 
-        });
+                let table = document.getElementById("pool");
+                table.innerHTML = "";
 
-        // socket.on('newPositions', function(data){
-        //     ctx.clearRect(0,0,500,500);
-        //     for(var i = 0; i < data.length; i++){
-        //         ctx.fillText(data[i].number, data[i].x,data[i].y);
-        //     }
-        // });
+                let numBag = data.length;
+                let xSize = 12;
+                let ySize = Math.ceil(numBag / xSize);
+
+                let count = 0;
+                for(i = 0; i < ySize; i++){
+                    let row = table.insertRow();
+                    for(j = 0; j < xSize; j++){
+                        //Check if there are already enough tiles
+                        if(count < numBag){
+                            let cell = row.insertCell();
+                            let elem = document.createElement("img");
+                            let l = data[xSize*i + j];
+                            elem.src = "/img/" + l + ".jpg";
+                            cell.appendChild(elem);
+                            count++;
+                        }
+                        else
+                            break;
+                    }
+                }
+
+
+                console.log("data" + data);
+                // ctx.clearRect(0,0,500,500);
+                // ctx.fillText(data.toString(), 20, 20);
+        });
 
         socket.on('updateWordDisplay', function(data){
             playerInfo.innerHTML = '';
@@ -88,6 +107,13 @@
             wordInput.value = '';
         }
     </script>
+
+    <style>
+        img {
+            width: 20px;
+        }
+    </style>
+
 </head>
 <body>
 </body>
