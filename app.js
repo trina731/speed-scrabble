@@ -62,7 +62,6 @@ var alph = "";
 var allUnflippedTiles = "";
 var numBag = 0;
 
-var unflipped = [];
 var flipped = [];
 var allTiles = [];
 
@@ -74,9 +73,9 @@ let alphSize = Number(txt[0]);
 //Initialize from file
 for(i = 0; i < alphSize; i++){
     alph += txt[i+1].substring(0,1);
-    unflipped[i] = Number(txt[i+1].substring(1));
-    numBag += unflipped[i];
-    for(j = 0; j < unflipped[i]; j++){
+    let amount = Number(txt[i+1].substring(1));
+    numBag += amount;
+    for(j = 0; j < amount; j++){
         allUnflippedTiles += alph.substring(i);
     }
 }   
@@ -104,10 +103,39 @@ io.sockets.on('connection', function(socket){
     console.log("socket connection");
 
     socket.on('submitWord', function(data){
-        //These two lines will have to be changed
+        //Is the dict case sensitive?
         if(methods.isValidWord(data)){
-            PLAYER_LIST[socket.id].words.push(data);
-            PLAYER_LIST[socket.id].score += data.length;
+            let currLetters = Array(alphSize).fill(0);
+            data = data.toUpperCase();
+            for(i = 0; i < data.length; i++){
+                let newLetter = data.charAt(i);
+                currLetters[alph.indexOf(newLetter)] += 1;
+            }
+            let canMake = 1;
+            for(i = 0; i < alphSize; i++){
+                if(currLetters[i] > flipped[i]){
+                    canMake = 0;
+                    break;
+                }
+            }
+            if(canMake){
+                for(i = 0; i < alphSize; i++){
+                    flipped[i] = flipped[i] - currLetters[i];
+                    for(j = 0; j < currLetters[i]; j++){
+                        let index = 0;
+                        for(k = index; index < allTiles.length; index++){
+                            if(allTiles[index] === alph.charAt(i)){
+                                allTiles[index] = '_';
+                                break;
+                            }
+                        }
+                    }
+                }  
+                PLAYER_LIST[socket.id].words.push(data);
+                PLAYER_LIST[socket.id].score += data.length;
+                SOCKET_LIST[s].emit('updateFlip', allTiles);
+            }
+
             var pack = [];
             for(var  i in PLAYER_LIST){
                 var player = PLAYER_LIST[i];
@@ -141,7 +169,6 @@ io.sockets.on('connection', function(socket){
     //Called when client clicks flip
     //Emits array of tiles in pool
     socket.on('requestFlip', function(){
-        console.log('flip requested in app js');
         if(allUnflippedTiles !== ""){
             //Find unflipped tile
             let toFlip = 0;
@@ -159,9 +186,7 @@ io.sockets.on('connection', function(socket){
             //Flip tile and update counts
             allTiles[toFlip] = newLetter;
             flipped[alph.indexOf(newLetter)] = flipped[alph.indexOf(newLetter)] + 1;
-            unflipped[alph.indexOf(newLetter)] = unflipped[alph.indexOf(newLetter)] - 1;
     
-            console.log("All tiles: " + allTiles);
             //Render changes
             for(s in SOCKET_LIST)
                 SOCKET_LIST[s].emit('updateFlip', allTiles);
