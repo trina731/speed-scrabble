@@ -95,8 +95,8 @@
                 }
                 console.log("data" + data);
         });
-
         
+        //For displaying the players, their words, and scores
         socket.on('updateWordDisplay', function(data){
             playerInfo.innerHTML = '';
             for(i in data){
@@ -105,15 +105,9 @@
             }
         });
 
+        //For debugging
         socket.on('evalAnswer', function(data){
             console.log(data);
-        })
-
-        //update player username when player signs in
-        socket.on('updateUsername', function(socket){
-            playerInfo.innerHTML = '';
-            playerInfo.innerHTML += "<p>" + socket.name + "'s score: " +
-            socket.score + "<br/>" + " Words: " + socket.words.join(', ') + "</p>";
         })
 
         function userNameSubmit(e){
@@ -121,11 +115,10 @@
             e.preventDefault();
             socket.emit('submitUsername', username.value);
         }
-
+        //Send word to server
         wordForm.onsubmit = function(e){
             //Prevent automatic page refresh
             e.preventDefault();
-            console.log("word in");
             //For debugging purposes: 
             //If you want to see the value of a variable, type in textbox
             //starting with a slash

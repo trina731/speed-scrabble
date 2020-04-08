@@ -94,7 +94,16 @@ io.sockets.on('connection', function(socket){
 
     socket.on('submitUsername', function(name){
         PLAYER_LIST[socket.id].name = name;
-        socket.emit('updateUsername', PLAYER_LIST[socket.id]);
+        let pack = [];
+            for(i in PLAYER_LIST){
+                let player = PLAYER_LIST[i];
+                pack.push({
+                    name:player.name,
+                    score:player.score,
+                    words:player.words
+                });
+            }
+        socket.emit('updateWordDisplay', pack);
     })
 
     socket.on('submitWord', function(data){
@@ -120,7 +129,7 @@ io.sockets.on('connection', function(socket){
                         let index = 0;
                         for(k = index; index < allTiles.length; index++){
                             if(allTiles[index] === alph.charAt(i)){
-                                allTiles[index] = '_';
+                                allTiles[index] = ' ';
                                 break;
                             }
                         }
@@ -128,12 +137,14 @@ io.sockets.on('connection', function(socket){
                 }  
                 PLAYER_LIST[socket.id].words.push(data);
                 PLAYER_LIST[socket.id].score += data.length;
-                SOCKET_LIST[s].emit('updateFlip', allTiles);
+                for(s in SOCKET_LIST){
+                    SOCKET_LIST[s].emit('updateFlip', allTiles);
+                }
             }
 
-            var pack = [];
-            for(var  i in PLAYER_LIST){
-                var player = PLAYER_LIST[i];
+            let pack = [];
+            for(i in PLAYER_LIST){
+                let player = PLAYER_LIST[i];
                 pack.push({
                     name:player.name,
                     score:player.score,
@@ -176,7 +187,7 @@ io.sockets.on('connection', function(socket){
             let newLetter = allUnflippedTiles.substring(randIndex, randIndex + 1);
     
             //Remove letter from bag
-            allUnflippedTiles = allUnflippedTiles.substring(0,randIndex) + allUnflippedTiles.substring(randIndex);
+            allUnflippedTiles = allUnflippedTiles.substring(0,randIndex) + allUnflippedTiles.substring(randIndex + 1);
     
             //Flip tile and update counts
             allTiles[toFlip] = newLetter;
