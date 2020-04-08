@@ -4,6 +4,7 @@ var express = require('express');
 var app = express();
 var serv = require('http').Server(app);
 var newTrie = require("./trie");
+
 //const dictMethods = require("./dict");
 
 app.get('/', function(req, res) {
@@ -25,19 +26,8 @@ var Player = function(id){
         words:[],
         score:0,
         id:id,
-        number:"" + Math.floor(100 * Math.random()),
+        name:"",
     }
-    // left this in just to show an example of a function
-    // self.updatePosition = function(){
-    //     if(self.pressingRight)
-    //         self.x += self.maxSpd;
-    //     if(self.pressingLeft)
-    //         self.x -= self.maxSpd;
-    //     if(self.pressingUp)
-    //         self.y -= self.maxSpd;
-    //     if(self.pressingDown)
-    //         self.y += self.maxSpd;
-    // }
     return self;
 }
 
@@ -102,6 +92,11 @@ io.sockets.on('connection', function(socket){
     });
     console.log("socket connection");
 
+    socket.on('submitUsername', function(name){
+        PLAYER_LIST[socket.id].name = name;
+        socket.emit('updateUsername', PLAYER_LIST[socket.id]);
+    })
+
     socket.on('submitWord', function(data){
         //Is the dict case sensitive?
         if(methods.isValidWord(data)){
@@ -140,7 +135,7 @@ io.sockets.on('connection', function(socket){
             for(var  i in PLAYER_LIST){
                 var player = PLAYER_LIST[i];
                 pack.push({
-                    number:player.number,
+                    name:player.name,
                     score:player.score,
                     words:player.words
                 });

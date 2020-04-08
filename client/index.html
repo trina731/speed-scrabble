@@ -1,5 +1,9 @@
 <!DOCTYPE html>
-
+<form id="player-form" onsubmit="return userNameSubmit(event)">
+    <label for="Username">Username:</label><br>
+    <input id="player-input" type='text' style='width:500px'></input>
+    <br>
+</form>
 <!-- I tried moving these things into the body and it didn't work... Not sure why -->
 <canvas id="ctx" width="0" height="0" style="border:1px solid #000000;">
     <div id="array"></div>
@@ -22,6 +26,8 @@
 
         var wordForm = document.getElementById('word-form');
         var wordInput = document.getElementById('word-input');
+        var signInForm = document.getElementById('player-form');
+        var username = document.getElementById('player-input');
         var playerInfo = document.getElementById('playerInfo');
         let btn = document.getElementById('flipBtn');
 
@@ -45,7 +51,7 @@
             socket.emit("requestFlip");
         }
 
-        //FOr setting up the table when client connects
+        //For setting up the table when client connects
         socket.on("tileInfo", function(data){
             let table = document.getElementById("pool");
             table.innerHTML = "";
@@ -94,7 +100,7 @@
         socket.on('updateWordDisplay', function(data){
             playerInfo.innerHTML = '';
             for(i in data){
-                playerInfo.innerHTML += "<p>" + data[i].number + "'s score: " +
+                playerInfo.innerHTML += "<p>" + data[i].name + "'s score: " +
                 data[i].score + "<br/>" + " Words: " + data[i].words.join(', ') + "</p>";
             }
         });
@@ -103,10 +109,23 @@
             console.log(data);
         })
 
+        //update player username when player signs in
+        socket.on('updateUsername', function(socket){
+            playerInfo.innerHTML = '';
+            playerInfo.innerHTML += "<p>" + socket.name + "'s score: " +
+            socket.score + "<br/>" + " Words: " + socket.words.join(', ') + "</p>";
+        })
+
+        function userNameSubmit(e){
+            //Prevent automatic page refresh
+            e.preventDefault();
+            socket.emit('submitUsername', username.value);
+        }
+
         wordForm.onsubmit = function(e){
             //Prevent automatic page refresh
             e.preventDefault();
-
+            console.log("word in");
             //For debugging purposes: 
             //If you want to see the value of a variable, type in textbox
             //starting with a slash
