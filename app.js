@@ -80,7 +80,7 @@ function removeFromPool(letters){
             let letter = alph.charAt(i);
             for(k = index; index < allTiles.length; index++){
                 if(allTiles[index] === letter){
-                    allTiles[index] = ' ';
+                    allTiles[index] = '_';
                     break;
                 }
             }
@@ -188,13 +188,14 @@ io.sockets.on('connection', function(socket){
                     }
                 }
                 if(toStealFrom != -1){
-                    let stolenWord = toStealFrom.words.splice(wordToSteal)[0];
+                    let stolenWord = toStealFrom.words.splice(toStealFrom.words.indexOf((wordToSteal), 1));
 
                     //TODO - there must be some kinda array subtract method
                     //It should be faster than looping over everything
+                    console.log(currLetters);
                     for(i = 0; i < alphSize; i++)
                         currLetters[i] -= stealLetterCount[i];
-
+                    console.log(currLetters);
                     removeFromPool(currLetters);
 
                     PLAYER_LIST[socket.id].words.push(data);
