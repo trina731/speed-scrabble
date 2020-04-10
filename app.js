@@ -72,6 +72,31 @@ for(i = 0; i < alphSize; i++){
 flipped = Array(alphSize).fill(0);
 allTiles = Array(numBag).fill("_"); 
 
+function removeFromPool(letters){
+    for(i = 0; i < alphSize; i++){
+        flipped[i] = flipped[i] - letters[i];
+        for(j = 0; j < letters[i]; j++){
+            let index = 0;
+            let letter = alph.charAt(i);
+            for(k = index; index < allTiles.length; index++){
+                if(allTiles[index] === letter){
+                    allTiles[index] = ' ';
+                    break;
+                }
+            }
+        }
+    }  
+}
+
+function countLetters(word){
+    let toReturn = Array(alphSize).fill(0);
+    word = word.toUpperCase();
+    for(i = 0; i < word.length; i++){
+        let newLetter = word.charAt(i);
+        toReturn[alph.indexOf(newLetter)] += 1;
+    }
+    return toReturn;
+}
 
 io.sockets.on('connection', function(socket){
     socket.id = Math.random();
@@ -107,14 +132,13 @@ io.sockets.on('connection', function(socket){
     })
 
     socket.on('submitWord', function(data){
-        //Is the dict case sensitive?
-        if(methods.isValidWord(data)){
-            let currLetters = Array(alphSize).fill(0);
+        //If this word is in the dictionary
+        if(methods.isValidWord(data.toLowerCase())){
             data = data.toUpperCase();
-            for(i = 0; i < data.length; i++){
-                let newLetter = data.charAt(i);
-                currLetters[alph.indexOf(newLetter)] += 1;
-            }
+            //Count all the letters needed to make the word
+            let currLetters = countLetters(data);
+            
+            //Check if letters in pool are enough
             let canMake = 1;
             for(i = 0; i < alphSize; i++){
                 if(currLetters[i] > flipped[i]){
@@ -122,26 +146,67 @@ io.sockets.on('connection', function(socket){
                     break;
                 }
             }
+            //If all letters are in pool, take em out
             if(canMake){
-                for(i = 0; i < alphSize; i++){
-                    flipped[i] = flipped[i] - currLetters[i];
-                    for(j = 0; j < currLetters[i]; j++){
-                        let index = 0;
-                        for(k = index; index < allTiles.length; index++){
-                            if(allTiles[index] === alph.charAt(i)){
-                                allTiles[index] = ' ';
-                                break;
-                            }
-                        }
-                    }
-                }  
+                removeFromPool(currLetters);
                 PLAYER_LIST[socket.id].words.push(data);
                 PLAYER_LIST[socket.id].score += data.length;
                 for(s in SOCKET_LIST){
                     SOCKET_LIST[s].emit('updateFlip', allTiles);
                 }
             }
+            //Steal
+            else{
+                let toStealFrom = -1;
+                let wordToSteal = "";
+                let stealLetterCount = [];
+                //TODO: Random ordering for fairness
+                for(i in PLAYER_LIST){
+                    let player = PLAYER_LIST[i];
+                    for(w in player.words){
+                        //Count letters in word that's gonna be stolen
+                        word = player.words[w]
+                        let requiredToSteal = countLetters(word);
+                        let canSteal = 1;
+                        for(i = 0; i < alphSize; i++){
+                            //Must use all letter from word you are going to steal
+                            //Must be enough letters overall for the word to exist
+                            if(currLetters[i] != 0 &&
+                                    currLetters[i] > flipped[i] + requiredToSteal[i] || 
+                                    currLetters[i] < requiredToSteal[i]){
+                                canSteal = 0;
+                                break;
+                            }
+                        }
+                        if(canSteal){
+                            toStealFrom = player;
+                            wordToSteal = word;
+                            //copy the array
+                            stealLetterCount = requiredToSteal.slice();
+                            break;
+                        }
+                    }
+                }
+                if(toStealFrom != -1){
+                    let stolenWord = toStealFrom.words.splice(wordToSteal)[0];
 
+                    //TODO - there must be some kinda array subtract method
+                    //It should be faster than looping over everything
+                    for(i = 0; i < alphSize; i++)
+                        currLetters[i] -= stealLetterCount[i];
+
+                    removeFromPool(currLetters);
+
+                    PLAYER_LIST[socket.id].words.push(data);
+                    PLAYER_LIST[socket.id].score += data.length;
+                    toStealFrom.score -= stolenWord.length;
+                    for(s in SOCKET_LIST){
+                        SOCKET_LIST[s].emit('updateFlip', allTiles);
+                    }
+                }
+            }
+
+            //update scoreboard
             let pack = [];
             for(i in PLAYER_LIST){
                 let player = PLAYER_LIST[i];
@@ -158,9 +223,6 @@ io.sockets.on('connection', function(socket){
         else{
             //TODO (What to do if not a word)
         }
-        //TODO:
-        //Check if playable
-        //Update display and pts if necessary
     });
     
     //For debugging app.js from browser
