@@ -1,13 +1,11 @@
 <!DOCTYPE html>
-<form id="player-form" onsubmit="return userNameSubmit(event)">
+<form id="username-form">
     <label for="Username">Username:</label><br>
-    <input id="player-input" type='text' style='width:500px'></input>
+    <input id="username-input" type='text' style='width:500px'></input>
     <br>
 </form>
-<!-- I tried moving these things into the body and it didn't work... Not sure why -->
-<canvas id="ctx" width="0" height="0" style="border:1px solid #000000;">
-    <div id="array"></div>
-</canvas>
+<button type="button" id="newGameBtn">New Game!</button>
+
 
 <table id="pool"></table>
 

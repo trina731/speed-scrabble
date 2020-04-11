@@ -54,23 +54,34 @@ var numBag = 0;
 
 var flipped = [];
 var allTiles = [];
+var alphSize = 0;
 
-let txt = fs.readFileSync('letters.txt').toString().split("\n");;
+function initGame(){
+    alph = "";
+    allUnflippedTiles = "";
+    numBag = 0;
 
-//First line has the number of letters in the alphabet
-let alphSize = Number(txt[0]);
+    flipped = [];
+    allTiles = [];
 
-//Initialize from file
-for(i = 0; i < alphSize; i++){
-    alph += txt[i+1].substring(0,1);
-    let amount = Number(txt[i+1].substring(1));
-    numBag += amount;
-    for(j = 0; j < amount; j++){
-        allUnflippedTiles += alph.substring(i);
-    }
-}   
-flipped = Array(alphSize).fill(0);
-allTiles = Array(numBag).fill("_"); 
+    let txt = fs.readFileSync('letters.txt').toString().split("\n");;
+
+    //First line has the number of letters in the alphabet
+    alphSize = Number(txt[0]);
+
+    //Initialize from file
+    for(i = 0; i < alphSize; i++){
+        alph += txt[i+1].substring(0,1);
+        let amount = Number(txt[i+1].substring(1));
+        numBag += amount;
+        for(j = 0; j < amount; j++){
+            allUnflippedTiles += alph.substring(i);
+        }
+    }   
+    flipped = Array(alphSize).fill(0);
+    allTiles = Array(numBag).fill("_"); 
+}
+
 
 function removeFromPool(letters){
     for(i = 0; i < alphSize; i++){
@@ -80,7 +91,7 @@ function removeFromPool(letters){
             let letter = alph.charAt(i);
             for(k = index; index < allTiles.length; index++){
                 if(allTiles[index] === letter){
-                    allTiles[index] = '_';
+                    allTiles[index] = ' ';
                     break;
                 }
             }
@@ -98,6 +109,8 @@ function countLetters(word){
     return toReturn;
 }
 
+initGame();
+
 io.sockets.on('connection', function(socket){
     socket.id = Math.random();
     SOCKET_LIST[socket.id] = socket;
@@ -106,7 +119,7 @@ io.sockets.on('connection', function(socket){
     PLAYER_LIST[socket.id] = player;
 
     socket.emit('tileInfo', allTiles);
-   
+
     socket.on('disconnect',function(){
         delete SOCKET_LIST[socket.id];
         delete PLAYER_LIST[socket.id];
@@ -118,6 +131,7 @@ io.sockets.on('connection', function(socket){
     console.log("socket connection");
 
     socket.on('submitUsername', function(name){
+        console.log("In client, submitted username: " + name);
         PLAYER_LIST[socket.id].name = name;
         let pack = [];
             for(i in PLAYER_LIST){
@@ -193,22 +207,16 @@ io.sockets.on('connection', function(socket){
                     }
                 }
                 if(toStealFrom != -1){
-                    console.log("before " + toStealFrom.words);
-                    console.log("index of thing: " + toStealFrom.words.indexOf((wordToSteal)));
-                    let stolenWord = toStealFrom.words.splice(toStealFrom.words.indexOf((wordToSteal), 1))[0];
-                    console.log("after " + toStealFrom.words);
+                    let stolenWord = toStealFrom.words.splice(toStealFrom.words.indexOf(wordToSteal), 1)[0];
                    
                     //TODO - there must be some kinda array subtract method
                     //It should be faster than looping over everything
-                    //console.log(currLetters);
                     for(i = 0; i < alphSize; i++)
                         currLetters[i] -= stealLetterCount[i];
-                    //console.log(currLetters);
                     removeFromPool(currLetters);
 
                     PLAYER_LIST[socket.id].words.push(data);
                     PLAYER_LIST[socket.id].score += data.length;
-                    console.log("STEALING WORD: " + stolenWord + ", LENGTH = " + stolenWord.length);
                     toStealFrom.score -= stolenWord.length;
                     for(s in SOCKET_LIST){
                         SOCKET_LIST[s].emit('updateFlip', allTiles);
@@ -244,6 +252,27 @@ io.sockets.on('connection', function(socket){
         socket.emit('evalAnswer', res);
     })
 
+
+    socket.on('requestNewGame', function(){
+        initGame();
+        let pack = [];
+            for(i in PLAYER_LIST){
+                let player = PLAYER_LIST[i];
+                player.score = 0;
+                player.words = [];
+                pack.push({
+                    name:player.name,
+                    score:player.score,
+                    words:player.words
+                });
+            }
+        for(s in SOCKET_LIST){
+            SOCKET_LIST[s].emit('updateFlip', allTiles);
+            SOCKET_LIST[s].emit('updateWordDisplay', pack);
+        }
+        
+    });
+
     //Called when client clicks flip
     //Emits array of tiles in pool
     socket.on('requestFlip', function(){
@@ -272,20 +301,6 @@ io.sockets.on('connection', function(socket){
     });
 });
 
-//We can repurpose this to handle tile-flipping
-setInterval(function(){
-    var pack = [];
-    for(var  i in SOCKET_LIST){
-        var socket = SOCKET_LIST[i];
-        socket.x++;
-        socket.y++;
-        pack.push({
-            x:socket.x,
-            y:socket.y
-        });
-    }
-    for(var i in SOCKET_LIST){
-        var socket = SOCKET_LIST[i];
-        socket.emit('newPositions', pack);
-    }
-}, 1000/25);
+// setInterval(function(){
+//     socket.emit("requestFlip");
+// }, 3000);

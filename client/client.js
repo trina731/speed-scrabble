@@ -1,13 +1,11 @@
-var c = document.getElementById("ctx");
-ctx = c.getContext("2d");
-ctx.font = '30px Arial';
 
 var wordForm = document.getElementById('word-form');
 var wordInput = document.getElementById('word-input');
-var signInForm = document.getElementById('player-form');
-var username = document.getElementById('player-input');
+var signInForm = document.getElementById('username-form');
+var username = document.getElementById('username-input');
 var playerInfo = document.getElementById('playerInfo');
-let btn = document.getElementById('flipBtn');
+let flipBtn = document.getElementById('flipBtn');
+let newGameBtn = document.getElementById('newGameBtn');
 
 var Player = function(id){
     var self = {
@@ -19,14 +17,16 @@ var Player = function(id){
     return self;
 }
 
-//Hm... I'm not a fan of hardcoding 2000. What if that port is busy for some reason?
-//I guess for now it's ok because it makes it easy to use in the browser, but I think
-//We should look into alternatives
-var socket = io.connect('http://localhost:2000');
+//CHANGE EVERY TIME YOU START NEW NGROK
+var socket = io.connect('http://61776c4b.ngrok.io');
 
-btn.onclick = function(){
-    console.log("Requested flip inside index.html");
+flipBtn.onclick = function(){
     socket.emit("requestFlip");
+}
+
+newGameBtn.onclick = function(){
+    console.log("button clicked");
+    socket.emit("requestNewGame");
 }
 
 //For setting up the table when client connects
@@ -51,7 +51,10 @@ socket.on("tileInfo", function(data){
                     //tile in the pool array
                     elem.setAttribute("id", "tile_" + count);
                     let l = data[count];
-                    elem.src = "/img/" + l + ".jpg";
+                    if(l === " ")
+                        elem.src = "/img/white.jpg";
+                    else
+                        elem.src = "/img/" + l + ".jpg";
                     cell.appendChild(elem);
                     count++;
                 }
@@ -69,11 +72,13 @@ socket.on("updateFlip", function(data){
 
         for(i = 0; i < numBag; i++){
             let t = document.getElementById("tile_" + i);
-            console.log(data[i]);
             t.src = '/img/' + data[i] + '.jpg';
         }
-        console.log("data" + data);
 });
+
+setInterval(function(){
+    socket.emit("requestFlip");
+}, 10000);
 
 //For displaying the players, their words, and scores
 socket.on('updateWordDisplay', function(data){
@@ -89,7 +94,7 @@ socket.on('evalAnswer', function(data){
     console.log(data);
 })
 
-function userNameSubmit(e){
+signInForm.onsubmit = function(e){
     //Prevent automatic page refresh
     e.preventDefault();
     socket.emit('submitUsername', username.value);
