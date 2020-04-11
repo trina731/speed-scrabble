@@ -44,7 +44,7 @@ var methods = require('./dict')(dict);
 //leaving this in - example of checking valid word
 /*console.log(methods.isValidWord("cat"));*/
 
-var io = require("socket.io")(serv,{});
+var io = require("socket.io").listen(serv);
 
 
 //TILES
@@ -133,7 +133,7 @@ io.sockets.on('connection', function(socket){
 
     socket.on('submitWord', function(data){
         //If this word is in the dictionary
-        if(methods.isValidWord(data.toLowerCase())){
+        if(methods.isValidWord(data.toLowerCase()) && data.length > 2){
             data = data.toUpperCase();
             //Count all the letters needed to make the word
             let currLetters = countLetters(data);
@@ -166,19 +166,24 @@ io.sockets.on('connection', function(socket){
                     for(w in player.words){
                         //Count letters in word that's gonna be stolen
                         word = player.words[w]
+                        if(word.length > data.length)
+                            continue;
                         let requiredToSteal = countLetters(word);
                         let canSteal = 1;
+                        let letterFromPool = 0;
                         for(i = 0; i < alphSize; i++){
                             //Must use all letter from word you are going to steal
                             //Must be enough letters overall for the word to exist
-                            if(currLetters[i] != 0 &&
-                                    currLetters[i] > flipped[i] + requiredToSteal[i] || 
+                            if(currLetters[i] > flipped[i] + requiredToSteal[i] || 
                                     currLetters[i] < requiredToSteal[i]){
                                 canSteal = 0;
                                 break;
                             }
+                            //Must take at least one letter from pool
+                            if(currLetters[i] > requiredToSteal[i] && flipped[i] > 0)
+                                    letterFromPool = 1;
                         }
-                        if(canSteal){
+                        if(canSteal && letterFromPool){
                             toStealFrom = player;
                             wordToSteal = word;
                             //copy the array
@@ -188,18 +193,22 @@ io.sockets.on('connection', function(socket){
                     }
                 }
                 if(toStealFrom != -1){
-                    let stolenWord = toStealFrom.words.splice(toStealFrom.words.indexOf((wordToSteal), 1));
-
+                    console.log("before " + toStealFrom.words);
+                    console.log("index of thing: " + toStealFrom.words.indexOf((wordToSteal)));
+                    let stolenWord = toStealFrom.words.splice(toStealFrom.words.indexOf((wordToSteal), 1))[0];
+                    console.log("after " + toStealFrom.words);
+                   
                     //TODO - there must be some kinda array subtract method
                     //It should be faster than looping over everything
-                    console.log(currLetters);
+                    //console.log(currLetters);
                     for(i = 0; i < alphSize; i++)
                         currLetters[i] -= stealLetterCount[i];
-                    console.log(currLetters);
+                    //console.log(currLetters);
                     removeFromPool(currLetters);
 
                     PLAYER_LIST[socket.id].words.push(data);
                     PLAYER_LIST[socket.id].score += data.length;
+                    console.log("STEALING WORD: " + stolenWord + ", LENGTH = " + stolenWord.length);
                     toStealFrom.score -= stolenWord.length;
                     for(s in SOCKET_LIST){
                         SOCKET_LIST[s].emit('updateFlip', allTiles);
